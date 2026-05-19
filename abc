@@ -1,0 +1,25 @@
+likely issue is with the Correlation Attribute.
+
+Right now:
+Correlation Attribute Name = datalake.tag
+
+If datalake.tag value is different for each FlowFile, then MergeRecord treats every file separately and creates multiple output files instead of one merged file.
+
+Recommended Fix:
+
+Add UpdateAttribute processor before MergeRecord
+Set:
+merge.group = R5EVENTS
+In MergeRecord change:
+Correlation Attribute Name = merge.group
+Update MergeRecord settings:
+Merge Strategy = Bin-Packing Algorithm
+Minimum Number of Records = 1
+Maximum Number of Records = 10000000
+Max Bin Age = 1 min
+Maximum Number of Bins = 1
+Verify all incoming FlowFiles have same merge.group attribute value.
+Optionally reduce Max Bin Age from 20 min to 1 min so merge happens faster.
+
+Expected Result:
+Multiple CSV files from same source/table will merge into one final CSV file before writing to Azure Blob Storage.
